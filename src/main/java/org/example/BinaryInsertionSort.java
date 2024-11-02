@@ -1,7 +1,6 @@
 package org.example;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -11,7 +10,7 @@ public class BinaryInsertionSort {
     public static void binaryInsertionSort(int[] array) {
         for (int i = 1; i < array.length; i++) {
             int chave = array[i];
-            int pos = Math.abs(buscaBinaria(array, chave, 0, i - 1) + 1);
+            int pos = buscaBinaria(array, chave, 0, i - 1);
 
             // Move todos os elementos maiores que a chave uma posição à frente
             for (int j = i - 1; j >= pos; j--) {
@@ -23,46 +22,17 @@ public class BinaryInsertionSort {
         }
     }
 
-    // Função de busca binária modificada
+    // Função de busca binária modificada para encontrar a posição correta
     private static int buscaBinaria(int[] array, int chave, int inicio, int fim) {
-        if (fim <= inicio) {
-            return (chave > array[inicio]) ? inicio + 1 : inicio;
-        }
-
-        int meio = (inicio + fim) / 2;
-
-        if (chave == array[meio]) {
-            return meio + 1;
-        }
-
-        if (chave > array[meio]) {
-            return buscaBinaria(array, chave, meio + 1, fim);
-        }
-
-        return buscaBinaria(array, chave, inicio, meio - 1);
-    }
-
-    public static void main(String[] args) {
-        String[] arquivos = {"1000_numbers.txt", "5000_numbers.txt", "10000_numbers.txt"};
-
-        for (String nomeArquivo : arquivos) {
-            try {
-                int[] vetorDesordenado = lerNumerosDoArquivo(nomeArquivo);
-
-                long inicio = System.nanoTime(); // Medindo o tempo em nanosegundos
-                binaryInsertionSort(vetorDesordenado);
-                long fim = System.nanoTime(); // Tempo final
-
-                long tempoGasto = fim - inicio;
-
-                System.out.println("Arquivo: " + nomeArquivo);
-                System.out.println("Tempo gasto para ordenar: " + tempoGasto + " nanosegundos");
-                System.out.println("===========================================");
-
-            } catch (FileNotFoundException e) {
-                System.out.println("Arquivo não encontrado: " + e.getMessage());
+        while (inicio <= fim) {
+            int meio = (inicio + fim) / 2;
+            if (chave < array[meio]) {
+                fim = meio - 1;
+            } else {
+                inicio = meio + 1;
             }
         }
+        return inicio;
     }
 
     private static int[] lerNumerosDoArquivo(String nomeArquivo) throws FileNotFoundException {
@@ -82,5 +52,54 @@ public class BinaryInsertionSort {
         }
 
         return vetor;
+    }
+
+    public static void imprimirVetor(int[] vetor) {
+        for (int num : vetor) {
+            System.out.print(num + " ");
+        }
+        System.out.println();
+    }
+
+    public static void escreverEmArquivo(int[] vetor, String nomeArquivo) {
+        try {
+            File arquivo = new File("binary_insertion_ordenado_" + nomeArquivo);
+            FileWriter escritor = new FileWriter(arquivo);
+            BufferedWriter buffer = new BufferedWriter(escritor);
+
+            for (int num : vetor) {
+                buffer.write(num + "\n");
+            }
+
+            buffer.close();
+            escritor.close();
+        } catch (IOException e) {
+            System.err.println("Erro ao escrever no arquivo: " + e.getMessage());
+        }
+    }
+
+    public static void main(String[] args) {
+        String[] arquivos = {"1000_numbers.txt", "5000_numbers.txt", "10000_numbers.txt"};
+
+        for (String nomeArquivo : arquivos) {
+            try {
+                int[] vetorDesordenado = lerNumerosDoArquivo(nomeArquivo);
+
+                long inicio = System.nanoTime(); // Medindo o tempo em nanosegundos
+                binaryInsertionSort(vetorDesordenado);
+                long fim = System.nanoTime(); // Tempo final
+
+                long tempoGasto = fim - inicio;
+
+                System.out.println("Arquivo: " + nomeArquivo);
+                System.out.println("Tempo gasto para ordenar: " + tempoGasto + " nanosegundos");
+                imprimirVetor(vetorDesordenado);
+                escreverEmArquivo(vetorDesordenado, nomeArquivo);
+                System.out.println("===========================================");
+
+            } catch (FileNotFoundException e) {
+                System.out.println("Arquivo não encontrado: " + e.getMessage());
+            }
+        }
     }
 }
